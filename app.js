@@ -1,7 +1,7 @@
-import * as http from "http";
-import router from "./src/router";
+const http = require("http");
+const router = require("./src/router");
 
-const server = http.createServer(function (request, response) {
+const server = http.createServer((request, response) => {
   try {
     const { method, url } = request;
     switch (method) {
@@ -29,4 +29,4 @@ const server = http.createServer(function (request, response) {
   }
 });
 
-export default server;
+module.exports = server;
