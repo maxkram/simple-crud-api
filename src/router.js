@@ -1,15 +1,14 @@
-const fs = require("fs");
-const RepositoryPersons = require("./RepositoryPersons");
-const { NotFoundRecordError, CreatePersonError } = require("./error/errors");
+const DbPersons = require("./DbUsers");
+const { NotFoundRecordError, CreateUserError } = require("./error/errors");
 
 async function get(url, response) {
   try {
     let responseValue = "";
     const id = _parseURL(url);
     if (!id && id !== "") {
-      responseValue = await RepositoryPersons.findAll();
+      responseValue = await DbPersons.findAll();
     } else {
-      responseValue = await RepositoryPersons.findById(id);
+      responseValue = await DbPersons.findById(id);
     }
     response.statusCode = 200;
     response.end(JSON.stringify(responseValue));
@@ -22,27 +21,27 @@ async function post(request, response) {
   try {
     if (_parseURL(request.url)) {
       throw new NotFoundRecordError(
-        `Resource POST: ${request.url} does not exist`
+        `Ресурс POST: ${request.url} не существует`
       );
     }
 
-    let person = {};
+    let user = {};
     const chunks = [];
     await request.on("data", (chunk) => chunks.push(chunk));
 
     if (chunks.length == 0) {
-      throw new CreatePersonError("Object JSON is missing in the request body");
+      throw new CreateUserError("Объект JSON отсутствует в теле запроса");
     }
     try {
       reqBody = JSON.parse(chunks);
     } catch (error) {
-      throw new CreatePersonError("Invalid JSON object passed");
+      throw new CreateUserError("Передан невалидный объект JSON");
     }
 
-    person = RepositoryPersons.createPerson(reqBody);
+    user = DbPersons.createUser(reqBody);
 
     response.statusCode = 201;
-    response.end(JSON.stringify(person));
+    response.end(JSON.stringify(user));
   } catch (error) {
     _catch(error, response);
   }
@@ -53,28 +52,26 @@ async function put(request, response) {
     const id = _parseURL(request.url);
 
     if (!id) {
-      throw new NotFoundRecordError(
-        `Resource PUT: ${request.url} does not exist`
-      );
+      throw new NotFoundRecordError(`Ресурс PUT: ${request.url} не существует`);
     }
 
-    let person = {};
+    let user = {};
     const chunks = [];
     await request.on("data", (chunk) => chunks.push(chunk));
 
     if (chunks.length == 0) {
-      throw new CreatePersonError("Object JSON is missing in the request body");
+      throw new CreateUserError("Объект JSON отсутствует в теле запроса");
     }
     try {
       reqBody = JSON.parse(chunks);
     } catch (error) {
-      throw new CreatePersonError("Invalid JSON object passed");
+      throw new CreateUserError("Передан невалидный объект JSON");
     }
 
-    person = RepositoryPersons.editPerson(id, JSON.parse(chunks));
+    user = DbPersons.editUser(id, JSON.parse(chunks));
 
     response.statusCode = 200;
-    response.end(JSON.stringify(person));
+    response.end(JSON.stringify(user));
   } catch (error) {
     _catch(error, response);
   }
@@ -84,12 +81,12 @@ async function remove(url, response) {
   try {
     const id = _parseURL(url);
     if (id) {
-      await RepositoryPersons.deletePerson(id);
+      await DbPersons.deleteUser(id);
 
       response.statusCode = 204;
       response.end();
     } else {
-      throw new NotFoundRecordError("Missing ID to delete");
+      throw new NotFoundRecordError("Нет ID для удаления");
     }
   } catch (error) {
     _catch(error, response);
@@ -97,14 +94,14 @@ async function remove(url, response) {
 }
 
 function _parseURL(url) {
-  if (url === "/person") {
+  if (url === "/api/user") {
     return false;
-  } else if (url.indexOf("/person/") === 0) {
-    const id = url.replace("/person/", "");
+  } else if (url.indexOf("/api/user/") === 0) {
+    const id = url.replace("/api/user/", "");
 
     return id;
   } else {
-    throw new NotFoundRecordError(`Resource ${url} does not exist`);
+    throw new NotFoundRecordError(`Ресурс ${url} не существует`);
   }
 }
 

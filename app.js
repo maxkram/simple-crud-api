@@ -20,7 +20,7 @@ const server = http.createServer((request, response) => {
 
       default:
         response.statusCode = 404;
-        response.end("Not supported method");
+        response.end("Метод не поддерживается");
         break;
     }
   } catch (error) {
